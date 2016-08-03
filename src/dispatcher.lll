@@ -1,0 +1,97 @@
+;;; ---------------------------------------------------------------------------
+;;; Contract: Dispatcher
+;;;
+;;; Copyright 2016 Daniel Ellison
+;;;
+;;;    Licensed under the Apache License, Version 2.0 (the "License");
+;;;    you may not use this file except in compliance with the License.
+;;;    You may obtain a copy of the License at
+;;;
+;;;      http://www.apache.org/licenses/LICENSE-2.0
+;;;
+;;;    Unless required by applicable law or agreed to in writing, software
+;;;    distributed under the License is distributed on an "AS IS" BASIS,
+;;;    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+;;;    See the License for the specific language governing permissions and
+;;;    limitations under the License.
+;;;
+;;; Version:
+;;; 0.0.1
+
+;; ----------------------------------------------------------------------------
+;; Start of Dispatcher.
+
+(seq
+
+  ;; --------------------------------------------------------------------------
+  ;; INIT
+
+  ;; Include standard libraries.
+  (include "../lib/constants.lll")
+  (include "../lib/utilities.lll")
+
+  ;; Set up initial state.
+  (sstore contract-owner (caller))
+  (sstore contract-address 0x00)
+
+  ;; --------------------------------------------------------------------------
+  ;; CODE
+
+  (returnlll
+    (seq
+
+      ;; ----------------------------------------------------------------------
+      ;; Initialize the dispatcher with the contract at the address provided.
+      ;; This function is similar to a constructor except it has to be called
+      ;; manually with LLL.
+      ;;
+      ;; Signature: Dispatcher(address)
+      ;; Returns: nothing
+
+      (when (= (bytes4 (calldataload 0)) dispatcher)
+        (seq only-owner already-initialized no-contract-address
+
+          ;; Set contract address and enable it.
+          (sstore contract-address (calldataload 4))
+          (sstore @@contract-address true)
+
+          ;; Call the contract's initialize() function.
+          (mstore call-data (pad-right initialize))
+          (delegatecall (- (gas) 10000) @@contract-address
+              call-data 32 return-data 32)
+
+          ;; Stop here; constructors don't return anything.
+          (stop)))
+
+      ;; ----------------------------------------------------------------------
+      ;; No contract address has been set so we jump to an invalid location
+      ;; which causes an exception in the EVM. This results in any ether sent
+      ;; to the contract being returned to the caller.
+
+      (when (= @@contract-address 0x00)
+        (jump invalid-location))
+
+      ;; ----------------------------------------------------------------------
+      ;; First, retrieve the short hash of the function to be called. Then
+      ;; copy all calldata to a known location. Finally, call the contract
+      ;; @@contract-address providing the function call return length.
+
+      (mstore short-hash (bytes4 (calldataload 0)))
+      (calldatacopy call-data 0x00 (calldatasize))
+      (mstore return-code (delegatecall (- (gas) 10000) @@contract-address
+          call-data (calldatasize) return-data
+          (sload (+ @@contract-address @short-hash))))
+
+      ;; ----------------------------------------------------------------------
+      ;; If the call was successful, relay the data returned from the call,
+      ;; making sure we include the right length of data. If delegatecall
+      ;; failed, we bubble the EVM exception up.
+
+      (if (= @return-code true)
+        (return return-data (sload (+ @@contract-address @short-hash)))
+        (jump invalid-location))))
+
+;; ----------------------------------------------------------------------------
+;; End of Dispatcher.
+
+)

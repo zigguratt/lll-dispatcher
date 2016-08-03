@@ -1,0 +1,101 @@
+;;; ---------------------------------------------------------------------------
+;;; Library: Utilities
+;;;
+;;; Copyright 2016 Daniel Ellison
+;;;
+;;;    Licensed under the Apache License, Version 2.0 (the "License");
+;;;    you may not use this file except in compliance with the License.
+;;;    You may obtain a copy of the License at
+;;;
+;;;      http://www.apache.org/licenses/LICENSE-2.0
+;;;
+;;;    Unless required by applicable law or agreed to in writing, software
+;;;    distributed under the License is distributed on an "AS IS" BASIS,
+;;;    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+;;;    See the License for the specific language governing permissions and
+;;;    limitations under the License.
+;;;
+;;; Version:
+;;; 0.0.1
+
+;; ----------------------------------------------------------------------------
+;; Start of Utilities.
+
+(seq
+
+  ;; --------------------------------------------------------------------------
+  ;; Modifier: only-owner
+  ;;
+  ;; Check that the caller is the contract owner.
+
+  (def 'only-owner
+    (when (!= (caller) @@contract-owner)
+      (jump invalid-location)))
+
+  ;; --------------------------------------------------------------------------
+  ;; Modifier: already-initialized
+  ;;
+  ;; Check whether the dispatcher has already been initialized.
+
+  (def 'already-initialized
+    (when (!= @@contract-address 0x00)
+      (jump invalid-location)))
+
+  ;; --------------------------------------------------------------------------
+  ;; Modifier: no-contract-address
+  ;;
+  ;; Check whether a contract address has been provided.
+
+  (def 'no-contract-address
+    (when (= (calldataload 4) 0x00)
+      (jump invalid-location)))
+
+  ;; --------------------------------------------------------------------------
+  ;; Modifier: contract-enabled
+  ;;
+  ;; Check whether the contract is enabled.
+
+  (def 'contract-enabled
+    (when (= (sload @@contract-address) false)
+      (jump invalid-location)))
+
+  ;; --------------------------------------------------------------------------
+  ;; Function: bytes4(input)
+  ;;
+  ;; Extracts the four leftmost bytes of the input.
+  ;;
+  ;; Parameters:
+  ;; input - a long number
+
+  (def 'bytes4 (input)
+    (div input (exp 2 224)))
+
+  ;; --------------------------------------------------------------------------
+  ;; Function: pad-right(input)
+  ;;
+  ;; Pads the input so it's the leftmost four bytes of the result.
+  ;;
+  ;; Parameters:
+  ;; input - a short hash
+
+  (def 'pad-right (input)
+    (mul input (exp 2 224)))
+
+  ;; --------------------------------------------------------------------------
+  ;; Function: keccak(input)
+  ;;
+  ;; Determines the sha3 hash of a string.
+  ;;
+  ;; This function is called 'keccak' because that's actually what the EVM is
+  ;; doing; it's not performing a sha3 hash operation.
+  ;;
+  ;; Parameters:
+  ;; input - a 32 byte hex-encoded string.
+
+  (def 'keccak (input)
+    (sha3 0x00 (lit 0x00 input)))
+
+;; ----------------------------------------------------------------------------
+;; End of Utilities.
+
+)
