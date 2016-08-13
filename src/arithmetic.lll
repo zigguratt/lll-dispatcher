@@ -1,5 +1,5 @@
 ;;; ---------------------------------------------------------------------------
-;;; Contract: Arithemetic
+;;; Contract: Arithmetic
 ;;;
 ;;; Copyright 2016 Daniel Ellison
 ;;;
@@ -19,7 +19,7 @@
 ;;; 0.0.1
 
 ;; ----------------------------------------------------------------------------
-;; Start of Arithemetic.
+;; Start of Arithmetic.
 
 (seq
 
@@ -133,6 +133,6 @@
       (jump invalid-location)))
 
 ;; ----------------------------------------------------------------------------
-;; End of Arithemetic.
+;; End of Arithmetic.
 
 )
