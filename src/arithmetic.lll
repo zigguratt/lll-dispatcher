@@ -30,9 +30,6 @@
   (include "../lib/constants.lll")
   (include "../lib/utilities.lll")
 
-  ;; Include this contract's functions.
-  (include "functions.lll")
-
   ;; --------------------------------------------------------------------------
   ;; CODE
 
@@ -102,8 +99,8 @@
       (when (= (bytes4 (calldataload 0)) double)
         (seq
 
-          ;; Do the actual function call and save the result.
-          (mstore call-result (double (calldataload 4)))
+          ;; Do the doubling and save the result.
+          (mstore call-result (mul (calldataload 4) 2))
 
           ;; Log and return result.
           (log1 call-result 32 (sha3 0x00 (lit 0x00 "Doubled(uint256)")))
@@ -118,8 +115,8 @@
       (when (= (bytes4 (calldataload 0)) halve)
         (seq
 
-          ;; Do the actual function call and save the result.
-          (mstore call-result (halve (calldataload 4)))
+          ;; Do the halving and save the result.
+          (mstore call-result (div (calldataload 4) 2))
 
           ;; Log and return result.
           (log1 call-result 32 (sha3 0x00 (lit 0x00 "Halved(uint256)")))
