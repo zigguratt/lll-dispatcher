@@ -82,6 +82,23 @@
     (mul input (exp 2 224)))
 
   ;; --------------------------------------------------------------------------
+  ;; Function: function-id
+  ;;
+  ;; Retrieves the requested function ID from the first four bytes of
+  ;; the call data.
+
+  (def 'function-id
+    (bytes4 (calldataload 0)))
+
+  ;; --------------------------------------------------------------------------
+  ;; Function: return-size
+  ;;
+  ;; Retrieves data return size for a given function signature.
+
+  (def 'return-size
+    (sload (+ @@contract-address @short-hash)))
+
+  ;; --------------------------------------------------------------------------
   ;; Function: keccak(input)
   ;;
   ;; Determines the sha3 hash of a string.
