@@ -43,7 +43,7 @@
   ;; requires less memory.
   (def 'call-data   0x0a0) ;; Usually (calldatasize).
   (def 'call-result 0x1a0) ;; Produced by delegatecall target.
-  (def 'return-data 0x2a0) ;; 'call-result from delegatecall's perspective.
+  (def 'return-data 0x2a0) ;; call-result from caller's perspective.
 
   ;; Storage.
   (def 'contract-owner   0x00)
@@ -52,12 +52,14 @@
   ;; Jumping here causes an EVM error.
   (def 'invalid-location 0x02)
 
-  ;; Function signatures.
+  ;; Dispatcher function IDs.
   (def 'dispatcher 0xd8c2e7aa) ; Dispatcher(address)
   (def 'initialize 0x8129fc1c) ; initialize()
   (def 'replace    0xcabfb934) ; replace(address)
-  (def 'double     0xeee97206) ; double(uint256)
-  (def 'halve      0x20fb79e7) ; halve(uint256)
+
+  ;; Arithmetic function IDs.
+  (def 'double 0xeee97206) ; double(uint256)
+  (def 'halve  0x20fb79e7) ; halve(uint256)
 
 ;; ----------------------------------------------------------------------------
 ;; End of Constants.
