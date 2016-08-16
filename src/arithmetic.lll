@@ -44,15 +44,15 @@
       ;; Signature: initialize()
       ;; Returns: true
 
-      (when (= (bytes4 (calldataload 0)) initialize)
+      (when (= function-id initialize)
         (seq only-owner
 
           ;; Set up function return sizes for this contract. Adding the
           ;; contract address and the function hash together makes each
           ;; function return size unique to this contract.
           (sstore (+ @@contract-address replace) 32)
-          (sstore (+ @@contract-address double)  32)
-          (sstore (+ @@contract-address halve)   32)
+          (sstore (+ @@contract-address double) 32)
+          (sstore (+ @@contract-address halve) 32)
 
           ;; Log success and return true.
           (mstore8 call-result true)
@@ -65,7 +65,7 @@
       ;; Signature: replace(address)
       ;; Returns: address of new contract
 
-      (when (= (bytes4 (calldataload 0)) replace)
+      (when (= function-id replace)
         (seq only-owner no-contract-address
 
           ;; Disable this contract.
@@ -96,7 +96,7 @@
       ;; Signature: double(uint256)
       ;; Returns: product of multiplication
 
-      (when (= (bytes4 (calldataload 0)) double)
+      (when (= function-id double)
         (seq
 
           ;; Do the doubling and save the result.
@@ -112,7 +112,7 @@
       ;; Signature: halve(uint256)
       ;; Returns: quotient of division
 
-      (when (= (bytes4 (calldataload 0)) halve)
+      (when (= function-id halve)
         (seq
 
           ;; Do the halving and save the result.
