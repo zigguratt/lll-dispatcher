@@ -48,7 +48,7 @@
       ;; Signature: Dispatcher(address)
       ;; Returns: nothing
 
-      (when (= (bytes4 (calldataload 0)) dispatcher)
+      (when (= function-id dispatcher)
         (seq only-owner already-initialized no-contract-address
 
           ;; Set contract address and enable it.
@@ -72,23 +72,26 @@
         (jump invalid-location))
 
       ;; ----------------------------------------------------------------------
-      ;; First, retrieve the short hash of the function to be called. Then
-      ;; copy all calldata to a known location. Finally, call the contract
-      ;; @@contract-address providing the function call return length.
+      ;; First, store the short hash of the function to be called (for use by
+      ;; the 'return-size' macro). Then copy all calldata to a known location.
+      ;; Finally, call the contract @@contract-address providing the function
+      ;; call return length.
 
-      (mstore short-hash (bytes4 (calldataload 0)))
+      (mstore short-hash function-id)
       (calldatacopy call-data 0x00 (calldatasize))
       (mstore return-code (delegatecall (- (gas) 10000) @@contract-address
-          call-data (calldatasize) return-data
-          (sload (+ @@contract-address @short-hash))))
+          call-data (calldatasize) return-data return-size))
 
       ;; ----------------------------------------------------------------------
       ;; If the call was successful, relay the data returned from the call,
-      ;; making sure we include the right length of data. If delegatecall
-      ;; failed, we bubble the EVM exception up.
+      ;; making sure we include the right length of data. If there's no return
+      ;; data, just end contract execution. If delegatecall failed, we
+      ;; propogate the EVM exception up.
 
       (if (= @return-code true)
-        (return return-data (sload (+ @@contract-address @short-hash)))
+        (if (!= return-size 0)
+          (return return-data return-size)
+          (stop))
         (jump invalid-location))))
 
 ;; ----------------------------------------------------------------------------
