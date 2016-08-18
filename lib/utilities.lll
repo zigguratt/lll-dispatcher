@@ -93,7 +93,7 @@
   ;; --------------------------------------------------------------------------
   ;; Function: return-size
   ;;
-  ;; Retrieves data return size for a given function signature.
+  ;; Retrieves data return size for a given function ID.
 
   (def 'return-size
     (sload (+ @@contract-address @short-hash)))

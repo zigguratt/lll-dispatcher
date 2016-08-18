@@ -60,7 +60,7 @@
           (delegatecall (- (gas) 10000) @@contract-address
               call-data 32 return-data 32)
 
-          ;; Stop here; constructors don't return anything.
+          ;; Stop here; nothing to return.
           (stop)))
 
       ;; ----------------------------------------------------------------------

@@ -123,7 +123,7 @@
           (return call-result 32)))
 
       ;; ----------------------------------------------------------------------
-      ;; Fallback: No functions matched the short hash provided so we jump to
+      ;; Fallback: No functions matched the function ID provided so we jump to
       ;; an invalid location which causes an exception in the EVM. This results
       ;; in any ether sent to the contract to be returned to the caller.
 
