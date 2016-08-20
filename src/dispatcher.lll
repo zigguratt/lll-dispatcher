@@ -58,7 +58,7 @@
           ;; Call the contract's initialize() function.
           (mstore call-data (pad-right initialize))
           (delegatecall (- (gas) 10000) @@contract-address
-              call-data 32 return-data 32)
+              call-data 32 return-data 0)
 
           ;; Stop here; nothing to return.
           (stop)))
@@ -86,7 +86,7 @@
       ;; If the call was successful, relay the data returned from the call,
       ;; making sure we include the right length of data. If there's no return
       ;; data, just end contract execution. If delegatecall failed, we
-      ;; propogate the EVM exception up.
+      ;; propagate the EVM exception up.
 
       (if (= @return-code true)
         (if (!= return-size 0)
