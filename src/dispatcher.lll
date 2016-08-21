@@ -57,7 +57,7 @@
 
           ;; Call the contract's initialize() function.
           (mstore call-data (pad-right initialize))
-          (delegatecall (- (gas) 10000) @@contract-address
+          (delegatecall (- (gas) 1000) @@contract-address
               call-data 32 return-data 0)
 
           ;; Stop here; nothing to return.
@@ -79,7 +79,7 @@
 
       (mstore short-hash function-id)
       (calldatacopy call-data 0x00 (calldatasize))
-      (mstore return-code (delegatecall (- (gas) 10000) @@contract-address
+      (mstore return-code (delegatecall (- (gas) 1000) @@contract-address
           call-data (calldatasize) return-data return-size))
 
       ;; ----------------------------------------------------------------------
