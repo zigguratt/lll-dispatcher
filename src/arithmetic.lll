@@ -57,7 +57,7 @@
           ;; Log success and return true.
           (mstore call-result true)
           (log1 call-result 32 (sha3 0x00 (lit 0x00 "Initialized(bool)")))
-          (return call-result 32)))
+          (stop)))
 
       ;; ----------------------------------------------------------------------
       ;; Replace this contract with the contract at the address provided.
@@ -82,7 +82,7 @@
           ;; Call the new contract's initialize() function.
           (mstore call-data (pad-right initialize))
           (delegatecall (- (gas) 1000) @@contract-address
-              call-data 32 return-data 32)
+              call-data 32 return-data 0)
 
           ;; Log and return result.
           (log2 new-address 32
