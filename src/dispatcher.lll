@@ -45,7 +45,7 @@
 
   ;; Call the contract's initialize() function.
   (mstore call-data (shift-left initialize))
-  (delegatecall (gas) @@contract-address call-data 32 return-data 0)
+  (delegatecall (- (gas) hold-back) @@contract-address call-data 32 return-data 0)
 
   ;; --------------------------------------------------------------------------
   ;; CONTRACT CODE
@@ -61,7 +61,7 @@
 
       (mstore short-hash (shift-right (calldataload 0)))
       (calldatacopy call-data 0x00 (calldatasize))
-      (mstore return-code (delegatecall (gas) @@contract-address
+      (mstore return-code (delegatecall (- (gas) hold-back) @@contract-address
           call-data (calldatasize) return-data return-size))
 
       ;; ----------------------------------------------------------------------

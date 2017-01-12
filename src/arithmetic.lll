@@ -79,7 +79,7 @@
 
           ;; Call the replacement contract's initialize() function.
           (mstore call-data (shift-left initialize))
-          (delegatecall (gas) @@contract-address call-data 32 return-data 0)
+          (delegatecall (- (gas) hold-back) @@contract-address call-data 32 return-data 0)
 
           ;; Emit an event about the replacement.
           (log2 new-address 32
