@@ -1,5 +1,5 @@
 ;;; ---------------------------------------------------------------------------
-;;; Library: Utilities
+;;; Library: Macros
 ;;;
 ;;; Copyright 2016 Daniel Ellison
 ;;;
@@ -18,10 +18,45 @@
 ;;; Version:
 ;;; 0.0.1
 
-;; ----------------------------------------------------------------------------
-;; Start of Utilities.
-
 (seq
+
+  ;; --------------------------------------------------------------------------
+  ;; Constant definitions.
+
+  ;; Booleans.
+  (def 'true  1)
+  (def 'false 0)
+
+  ;; Memory (0x00 is used by logging).
+  (def 'short-hash  0x20)
+  (def 'old-address 0x40)
+  (def 'new-address 0x60)
+  (def 'return-code 0x80)
+
+  ;; These three have a variable length. Due to memory storage gas cost, we
+  ;; restrict the possible size to 256 bytes, which is 8 32-byte slots. After
+  ;; 256 bytes the memory overflows with unpredictable consequences. Increase
+  ;; these if you need more room. Likewise, reduce them if you know your data
+  ;; requires less memory.
+  (def 'call-data   0x0a0) ;; Usually (calldatasize).
+  (def 'call-result 0x1a0) ;; Produced by delegatecall target.
+  (def 'return-data 0x2a0) ;; call-result from caller's perspective.
+
+  ;; Storage.
+  (def 'contract-owner   0x00)
+  (def 'contract-address 0x01)
+
+  ;; Jumping here causes an EVM error.
+  (def 'invalid-location 0x02)
+
+  ;; Dispatcher function IDs.
+  (def 'dispatcher 0xd8c2e7aa) ; Dispatcher(address)
+  (def 'initialize 0x8129fc1c) ; initialize()
+  (def 'replace    0xcabfb934) ; replace(address)
+
+  ;; Arithmetic function IDs.
+  (def 'double 0xeee97206) ; double(uint256)
+  (def 'halve  0x20fb79e7) ; halve(uint256)
 
   ;; --------------------------------------------------------------------------
   ;; Modifier: only-owner
@@ -111,8 +146,5 @@
 
   (def 'keccak (input)
     (sha3 0x00 (lit 0x00 input)))
-
-;; ----------------------------------------------------------------------------
-;; End of Utilities.
 
 )

@@ -27,8 +27,7 @@
   ;; INIT
 
   ;; Include standard libraries.
-  (include "../lib/constants.lll")
-  (include "../lib/utilities.lll")
+  (include "macros.lll")
 
   ;; Set up initial state.
   (sstore contract-owner (caller))
