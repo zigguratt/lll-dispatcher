@@ -1,7 +1,8 @@
 ;;; ---------------------------------------------------------------------------
-;;; Contract: Arithmetic
+;;; @title An example contract.
+;;; @author Daniel Ellison <daniel@syrinx.net>
 ;;;
-;;; Copyright 2016 Daniel Ellison
+;;; Copyright 2016, 2017 Daniel Ellison
 ;;;
 ;;;    Licensed under the Apache License, Version 2.0 (the "License");
 ;;;    you may not use this file except in compliance with the License.
@@ -14,58 +15,55 @@
 ;;;    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ;;;    See the License for the specific language governing permissions and
 ;;;    limitations under the License.
-;;;
-;;; Version:
-;;; 0.0.1
-
-;; ----------------------------------------------------------------------------
-;; Start of Arithmetic.
 
 (seq
 
   ;; --------------------------------------------------------------------------
-  ;; INIT
+  ;; CONSTRUCTOR
 
-  ;; Include standard libraries.
-  (include "../lib/constants.lll")
-  (include "../lib/utilities.lll")
+  ;; Bring in our macro definitions.
+  (include "../stdlib/stdlib.lll")
+  (include "macros.lll")
+
+  ;; Make sure we're working with the right standard library version.
+  (when (!= stdlib-version required-stdlib)
+    (jump invalid-location))
 
   ;; --------------------------------------------------------------------------
-  ;; CODE
+  ;; CONTRACT CODE
 
   (returnlll
     (seq contract-enabled
 
       ;; ----------------------------------------------------------------------
-      ;; Initialize the contract function return sizes. We don't include
-      ;; initialize() itself as it's called directly from either the dispatcher
-      ;; or a contract that's replacing itself with another.
-      ;;
-      ;; Signature: initialize()
-      ;; Returns: true
+      ;; @notice Initialize the contract function return sizes.
+      ;; @dev Signature: initialize()
 
-      (when (= function-id initialize)
+      (function initialize
         (seq only-owner
 
           ;; Set up function return sizes for this contract. Adding the
           ;; contract address and the function hash together makes each
-          ;; function return size unique to this contract.
+          ;; function return size storage location unique to this contract.
           (sstore (+ @@contract-address replace) 32)
           (sstore (+ @@contract-address double) 32)
           (sstore (+ @@contract-address halve) 32)
 
-          ;; Log success and return true.
+          ;; Emit an event about the initialization.
           (mstore call-result true)
-          (log1 call-result 32 (sha3 0x00 (lit 0x00 "Initialized(bool)")))
+          (log1 call-result 32
+              (sha3 0x00 (lit 0x00 "Initialized(bool)")))
+
           (stop)))
 
       ;; ----------------------------------------------------------------------
-      ;; Replace this contract with the contract at the address provided.
-      ;;
-      ;; Signature: replace(address)
-      ;; Returns: address of new contract
+      ;; @notice Replace this contract with the one at the address provided.
+      ;; @dev Signature: replace(address)
+      ;; @param replacement The replacement contract.
 
-      (when (= function-id replace)
+      (def 'replacement (calldataload 0x04))
+
+      (function replace
         (seq only-owner no-contract-address
 
           ;; Disable this contract.
@@ -73,63 +71,63 @@
 
           ;; Save old and new contract addresses to memory for logging.
           (mstore old-address @@contract-address)
-          (mstore new-address (calldataload 4))
+          (mstore new-address replacement)
 
           ;; Set new contract address and enable it.
           (sstore contract-address @new-address)
           (sstore @@contract-address true)
 
-          ;; Call the new contract's initialize() function.
-          (mstore call-data (pad-right initialize))
-          (delegatecall (- (gas) 1000) @@contract-address
-              call-data 32 return-data 0)
+          ;; Call the replacement contract's initialize() function.
+          (mstore call-data (shift-left initialize))
+          (delegatecall (gas) @@contract-address call-data 32 return-data 0)
 
-          ;; Log and return result.
+          ;; Emit an event about the replacement.
           (log2 new-address 32
               (sha3 0x00 (lit 0x00 "Replaced(address,address)"))
               @old-address)
-          (return @@contract-address)))
+
+          (stop)))
 
       ;; ----------------------------------------------------------------------
-      ;; This multiplies the supplied number by 2.
-      ;;
-      ;; Signature: double(uint256)
-      ;; Returns: product of multiplication
+      ;; @notice Multiply the supplied number by 2.
+      ;; @dev Signature: double(uint256)
+      ;; @param multiplicand The number to double.
+      ;; @return The product of the multiplication.
 
-      (when (= function-id double)
+      (def 'multiplicand (calldataload 0x04))
+
+      (function double
         (seq
 
           ;; Do the doubling and save the result.
-          (mstore call-result (mul (calldataload 4) 2))
+          (mstore call-result (mul multiplicand 2))
 
-          ;; Log and return result.
-          (log1 call-result 32 (sha3 0x00 (lit 0x00 "Doubled(uint256)")))
+          ;; Return the result of the multiplication.
           (return call-result 32)))
 
       ;; ----------------------------------------------------------------------
-      ;; This divides the supplied number by 2.
-      ;;
-      ;; Signature: halve(uint256)
-      ;; Returns: quotient of division
+      ;; @notice Divide the supplied number by 2.
+      ;; @dev Signature: halve(uint256)
+      ;; @param dividend The number to halve.
+      ;; @return The quotient of the division.
 
-      (when (= function-id halve)
+      (def 'dividend (calldataload 0x04))
+
+      (function halve
         (seq
 
           ;; Do the halving and save the result.
-          (mstore call-result (div (calldataload 4) 2))
+          (mstore call-result (div dividend 2))
 
-          ;; Log and return result.
-          (log1 call-result 32 (sha3 0x00 (lit 0x00 "Halved(uint256)")))
+          ;; Return the result of the division.
           (return call-result 32)))
 
       ;; ----------------------------------------------------------------------
-      ;; Fallback: No functions matched the function ID provided so we jump to
-      ;; an invalid location which causes an exception in the EVM. This results
-      ;; in any ether sent to the contract to be returned to the caller.
+      ;; @notice Fallback: No functions matched the function ID provided so we
+      ;;         jump to an invalid location. This causes an exception in the
+      ;;         EVM which results in any ether sent to the contract to be
+      ;;         returned to the caller.
 
       (jump invalid-location)))
-
-;; ----------------------------------------------------------------------------
-;; End of Arithmetic.
 
 )

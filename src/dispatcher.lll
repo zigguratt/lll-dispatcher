@@ -1,7 +1,8 @@
 ;;; ---------------------------------------------------------------------------
-;;; Contract: Dispatcher
+;;; @title A contract function dispatcher.
+;;; @author Daniel Ellison <daniel@syrinx.net>
 ;;;
-;;; Copyright 2016 Daniel Ellison
+;;; Copyright 2016, 2017 Daniel Ellison
 ;;;
 ;;;    Licensed under the Apache License, Version 2.0 (the "License");
 ;;;    you may not use this file except in compliance with the License.
@@ -14,61 +15,43 @@
 ;;;    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ;;;    See the License for the specific language governing permissions and
 ;;;    limitations under the License.
-;;;
-;;; Version:
-;;; 0.0.1
-
-;; ----------------------------------------------------------------------------
-;; Start of Dispatcher.
 
 (seq
 
   ;; --------------------------------------------------------------------------
-  ;; INIT
+  ;; CONSTRUCTOR
 
-  ;; Include standard libraries.
+  ;; Bring in our macro definitions.
+  (include "../stdlib/stdlib.lll")
   (include "macros.lll")
 
-  ;; Set up initial state.
+  ;; Make sure we're working with the right standard library version.
+  (when (!= stdlib-version required-stdlib)
+    (jump invalid-location))
+
+  ;; Save the caller for use by modifiers.
   (sstore contract-owner (caller))
-  (sstore contract-address 0x00)
+
+  ;; Grab the constructor parameter.
+  (codecopy scratch-one (bytecodesize) 32)
+
+  ;; Make sure a contract address was provided.
+  (when (= @scratch-one 0x00)
+    (jump invalid-location))
+
+  ;; Store the associated contract address and enable the contract.
+  (sstore contract-address @scratch-one)
+  (sstore @@contract-address true)
+
+  ;; Call the contract's initialize() function.
+  (mstore call-data (shift-left initialize))
+  (delegatecall (gas) @@contract-address call-data 32 return-data 0)
 
   ;; --------------------------------------------------------------------------
-  ;; CODE
+  ;; CONTRACT CODE
 
   (returnlll
     (seq
-
-      ;; ----------------------------------------------------------------------
-      ;; Initialize the dispatcher with the contract at the address provided.
-      ;; This function is similar to a constructor except it has to be called
-      ;; manually with LLL.
-      ;;
-      ;; Signature: Dispatcher(address)
-      ;; Returns: nothing
-
-      (when (= function-id dispatcher)
-        (seq only-owner already-initialized no-contract-address
-
-          ;; Set contract address and enable it.
-          (sstore contract-address (calldataload 4))
-          (sstore @@contract-address true)
-
-          ;; Call the contract's initialize() function.
-          (mstore call-data (pad-right initialize))
-          (delegatecall (- (gas) 1000) @@contract-address
-              call-data 32 return-data 0)
-
-          ;; Stop here; nothing to return.
-          (stop)))
-
-      ;; ----------------------------------------------------------------------
-      ;; No contract address has been set so we jump to an invalid location
-      ;; which causes an exception in the EVM. This results in any ether sent
-      ;; to the contract being returned to the caller.
-
-      (when (= @@contract-address 0x00)
-        (jump invalid-location))
 
       ;; ----------------------------------------------------------------------
       ;; First, store the short hash of the function to be called (for use by
@@ -76,9 +59,9 @@
       ;; Finally, call the contract @@contract-address providing the function
       ;; call return length.
 
-      (mstore short-hash function-id)
+      (mstore short-hash (shift-right (calldataload 0)))
       (calldatacopy call-data 0x00 (calldatasize))
-      (mstore return-code (delegatecall (- (gas) 1000) @@contract-address
+      (mstore return-code (delegatecall (gas) @@contract-address
           call-data (calldatasize) return-data return-size))
 
       ;; ----------------------------------------------------------------------
@@ -92,8 +75,5 @@
           (return return-data return-size)
           (stop))
         (jump invalid-location))))
-
-;; ----------------------------------------------------------------------------
-;; End of Dispatcher.
 
 )
