@@ -1,5 +1,6 @@
 ;;; ---------------------------------------------------------------------------
-;;; Library: Macros
+;;; @title Macros for the function dispatcher.
+;;; @author Daniel Ellison <daniel@syrinx.net>
 ;;;
 ;;; Copyright 2016 Daniel Ellison
 ;;;
@@ -14,14 +15,14 @@
 ;;;    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ;;;    See the License for the specific language governing permissions and
 ;;;    limitations under the License.
-;;;
-;;; Version:
-;;; 0.0.1
 
 (seq
 
   ;; --------------------------------------------------------------------------
   ;; Constant definitions.
+
+  ;; Required standard library version.
+  (def 'required-stdlib "0.1.2")
 
   ;; Booleans.
   (def 'true  1)
