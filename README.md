@@ -1,4 +1,4 @@
-## lll-resurrected
+## lll-dispatcher
 
 This repository contains an Ethereum smart contract function dispatcher and an associated example contract, both written in LLL, Ethereum's Low-level Lisp-like Language. Its purpose is to show that LLL is a viable language in which to write smart contracts and that doing so is not as difficult as one might assume.
 
