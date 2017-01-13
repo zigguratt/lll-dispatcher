@@ -45,7 +45,9 @@
 
   ;; Call the contract's initialize() function.
   (mstore call-data (shift-left initialize))
-  (delegatecall (- (gas) hold-back) @@contract-address call-data 32 return-data 0)
+  (when (= false (delegatecall (- (gas) hold-back) @@contract-address
+      call-data 32 return-data 0))
+    (jump invalid-location))
 
   ;; --------------------------------------------------------------------------
   ;; CONTRACT CODE
