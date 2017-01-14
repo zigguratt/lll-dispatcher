@@ -22,7 +22,7 @@
   ;; CONSTRUCTOR
 
   ;; Bring in our macro definitions.
-  (include "../stdlib/stdlib.lll")
+  (include "stdlib/stdlib.lll")
   (include "macros.lll")
 
   ;; Make sure we're working with the right standard library version.
