@@ -6,10 +6,6 @@ I've written a [series of articles](http://blog.syrinx.net/the-resurrection-of-l
 
 The original LLL documentation was removed from the Wiki a while back, but it can still be found [here](https://github.com/ethereum/cpp-ethereum/wiki/LLL-PoC-6/04fae9e627ac84d771faddcf60098ad09230ab58).
 
-## Release History
-
-* 0.0.1 - Initial commit.
-
 ## Contributors
 
 Daniel Ellison – [daniel@syrinx.net](mailto:daniel@syrinx.net) - [@zigguratt](https://twitter.com/zigguratt)
