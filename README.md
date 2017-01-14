@@ -4,7 +4,7 @@ This repository contains an Ethereum smart contract function dispatcher and an a
 
 I've written a [series of articles](http://blog.syrinx.net/the-resurrection-of-lll-part-1/) on the subject where I go into great detail describing the code and my motivations for suggesting LLL as an alternative smart contract development language.
 
-The original LLL documentation was removed from the Wiki a while back, but it can still be found [here](https://github.com/ethereum/cpp-ethereum/wiki/LLL-PoC-6/04fae9e627ac84d771faddcf60098ad09230ab58).
+The original LLL documentation was removed from the Ethereum wiki a while back, but it can still be found [here](https://github.com/ethereum/cpp-ethereum/wiki/LLL-PoC-6/04fae9e627ac84d771faddcf60098ad09230ab58).
 
 ## License
 
