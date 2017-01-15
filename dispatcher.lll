@@ -43,7 +43,7 @@
   (sstore contract-address @scratch-one)
   (sstore @@contract-address true)
 
-  ;; Call the contract's initialize() function.
+  ;; Call the contract's initialize() function, making sure the call succeeds.
   (mstore call-data (shift-left initialize))
   (when (= false (delegatecall (- (gas) hold-back) @@contract-address
       call-data 32 return-data 0))
