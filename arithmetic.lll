@@ -51,9 +51,9 @@
 
           ;; Emit an event about the initialization.
           (mstore call-result true)
-          (log1 call-result 32
-              (sha3 0x00 (lit 0x00 "Initialized(bool)")))
+          (log1 call-result 32 initialized)
 
+          ;; Nothing to return, so halt contract execution.
           (stop)))
 
       ;; ----------------------------------------------------------------------
@@ -82,10 +82,9 @@
           (delegatecall (- (gas) hold-back) @@contract-address call-data 32 return-data 0)
 
           ;; Emit an event about the replacement.
-          (log2 new-address 32
-              (sha3 0x00 (lit 0x00 "Replaced(address,address)"))
-              @old-address)
+          (log2 new-address 32 replaced @old-address)
 
+          ;; Nothing to return, so halt contract execution.
           (stop)))
 
       ;; ----------------------------------------------------------------------

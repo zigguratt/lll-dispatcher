@@ -39,6 +39,12 @@
   (def 'double     0xeee97206) ; double(uint256)
   (def 'halve      0x20fb79e7) ; halve(uint256)
 
+  ;; Precomputed event IDs.
+  (def 'initialized ; Initialized(bool)
+      0xdebf9dd297d3980055770d6c047a67eed8f6b1e91397831703b5f2a73bec1320)
+  (def 'replaced ; Replaced(address,address)
+      0x25f1f5bf76d36a31ec1b14caf64b580331299fd2037e3589426317b1cdfd4ecb)
+
   ;; --------------------------------------------------------------------------
   ;; @notice Check whether the contract is enabled.
 
