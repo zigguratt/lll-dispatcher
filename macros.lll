@@ -25,7 +25,7 @@
   (def 'required-stdlib "0.1.2")
 
   ;; Memory layout.
-  (def 'short-hash  0x0300)
+  (def 'return-size 0x0300)
   (def 'old-address 0x0320)
   (def 'new-address 0x0340)
 
@@ -50,26 +50,26 @@
 
   (def 'contract-enabled
     (when (= (sload @@contract-address) false)
-      (jump invalid-location)))
+      (panic)))
 
   ;; --------------------------------------------------------------------------
   ;; @notice Check that the caller is the contract owner.
 
   (def 'only-owner
     (when (!= (caller) @@contract-owner)
-      (jump invalid-location)))
+      (panic)))
 
   ;; --------------------------------------------------------------------------
   ;; @notice Check whether a contract address has been provided.
 
   (def 'no-contract-address
     (when (= (calldataload 0x04) 0x00)
-      (jump invalid-location)))
+      (panic)))
 
   ;; --------------------------------------------------------------------------
-  ;; @notice Retrieves data return size for a given function ID.
+  ;; @notice Retrieves data return size for a given function.
 
-  (def 'return-size
-    (sload (+ @@contract-address @short-hash)))
+  (def 'get-return-size (function-id)
+    (sload (+ @@contract-address (shift-right function-id))))
 
 )

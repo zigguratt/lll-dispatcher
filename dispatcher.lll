@@ -19,7 +19,7 @@
 (seq
 
   ;; --------------------------------------------------------------------------
-  ;; CONSTRUCTOR
+  ;; INIT
 
   ;; Bring in our macro definitions.
   (include "stdlib/stdlib.lll")
@@ -27,55 +27,56 @@
 
   ;; Make sure we're working with the right standard library version.
   (when (!= stdlib-version required-stdlib)
-    (jump invalid-location))
+    (panic))
 
-  ;; Save the caller for use by modifiers.
+  ;; Save the caller as the contract owner for use by modifiers.
   (sstore contract-owner (caller))
 
-  ;; Grab the constructor parameter.
+  ;; Grab the constructor parameter and do a simple check to ensure that
+  ;; something was actually provided.
   (codecopy scratch-one (bytecodesize) 32)
-
-  ;; Make sure a contract address was provided.
   (when (= @scratch-one 0x00)
-    (jump invalid-location))
+    (panic))
 
-  ;; Store the associated contract address and enable the contract.
+  ;; Store the constructor parameter and enable the contract.
   (sstore contract-address @scratch-one)
   (sstore @@contract-address true)
 
   ;; Call the contract's initialize() function, making sure the call succeeds.
+  ;; A failure will abort contract deployment. This is one way to guarantee
+  ;; that a valid contract address was provided.
   (mstore call-data (shift-left initialize))
   (when (= false (delegatecall (- (gas) hold-back) @@contract-address
       call-data 32 return-data 0))
-    (jump invalid-location))
+    (panic))
 
   ;; --------------------------------------------------------------------------
-  ;; CONTRACT CODE
+  ;; CODE
 
   (returnlll
     (seq
 
       ;; ----------------------------------------------------------------------
-      ;; First, store the short hash of the function to be called (for use by
-      ;; the 'return-size' macro). Then copy all calldata to a known location.
-      ;; Finally, call the contract @@contract-address providing the function
-      ;; call return length.
+      ;; First, retrieve and store the return size of the function to be called
+      ;; (the function's ID is in the first four bytes of the call data). Then
+      ;; copy all call data to a known location. Finally, call the contract,
+      ;; recording the return code of the called function.
 
-      (mstore short-hash (shift-right (calldataload 0)))
+      (mstore return-size (get-return-size (calldataload 0)))
       (calldatacopy call-data 0x00 (calldatasize))
       (mstore return-code (delegatecall (- (gas) hold-back) @@contract-address
-          call-data (calldatasize) return-data return-size))
+          call-data (calldatasize) return-data @return-size))
 
       ;; ----------------------------------------------------------------------
-      ;; If the call was successful, relay the data returned from the call,
-      ;; making sure we include the right length of data. If there's no return
-      ;; data, just end contract execution. If delegatecall failed, we
-      ;; propagate the EVM exception up.
+      ;; If the delegatecall failed, propagate the failure up by causing an EVM
+      ;; exception. If the call was successful, relay the data returned from
+      ;; the call, making sure to include the right length of data. If there's
+      ;; no return data, just end contract execution.
 
-      (if (= @return-code true)
-        (if (!= return-size 0)
-          (return return-data return-size)
-          (stop))
-        (jump invalid-location))))
+      (if (= false @return-code)
+        (panic)
+        (if (!= @return-size 0)
+          (return return-data @return-size)
+          (stop)))))
 
 )

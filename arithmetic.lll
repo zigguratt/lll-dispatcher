@@ -19,7 +19,7 @@
 (seq
 
   ;; --------------------------------------------------------------------------
-  ;; CONSTRUCTOR
+  ;; INIT
 
   ;; Bring in our macro definitions.
   (include "stdlib/stdlib.lll")
@@ -27,10 +27,10 @@
 
   ;; Make sure we're working with the right standard library version.
   (when (!= stdlib-version required-stdlib)
-    (jump invalid-location))
+    (panic))
 
   ;; --------------------------------------------------------------------------
-  ;; CONTRACT CODE
+  ;; CODE
 
   (returnlll
     (seq contract-enabled
@@ -61,6 +61,7 @@
       ;; @dev Signature: replace(address)
       ;; @param replacement The replacement contract.
 
+      ;; Convenience macro to reference incoming parameter.
       (def 'replacement (calldataload 0x04))
 
       (function replace
@@ -77,9 +78,12 @@
           (sstore contract-address @new-address)
           (sstore @@contract-address true)
 
-          ;; Call the replacement contract's initialize() function.
+          ;; Call the replacement contract's initialize() function, making sure
+          ;; the call succeeds. A failure will roll back all preceding changes.
           (mstore call-data (shift-left initialize))
-          (delegatecall (- (gas) hold-back) @@contract-address call-data 32 return-data 0)
+          (when (= false (delegatecall (- (gas) hold-back) @@contract-address
+              call-data 32 return-data 0))
+            (panic))
 
           ;; Emit an event about the replacement.
           (log2 new-address 32 replaced @old-address)
@@ -93,15 +97,16 @@
       ;; @param multiplicand The number to double.
       ;; @return The product of the multiplication.
 
+      ;; Convenience macro to reference incoming parameter.
       (def 'multiplicand (calldataload 0x04))
 
       (function double
         (seq
 
-          ;; Do the doubling and save the result.
+          ;; Do the doubling and save the result for return.
           (mstore call-result (mul multiplicand 2))
 
-          ;; Return the result of the multiplication.
+          ;; Return the product of the multiplication.
           (return call-result 32)))
 
       ;; ----------------------------------------------------------------------
@@ -110,23 +115,24 @@
       ;; @param dividend The number to halve.
       ;; @return The quotient of the division.
 
+      ;; Convenience macro to reference incoming parameter.
       (def 'dividend (calldataload 0x04))
 
       (function halve
         (seq
 
-          ;; Do the halving and save the result.
+          ;; Do the halving and save the result for return.
           (mstore call-result (div dividend 2))
 
-          ;; Return the result of the division.
+          ;; Return the quotient of the division.
           (return call-result 32)))
 
       ;; ----------------------------------------------------------------------
       ;; @notice Fallback: No functions matched the function ID provided so we
-      ;;         jump to an invalid location. This causes an exception in the
-      ;;         EVM which results in any ether sent to the contract to be
-      ;;         returned to the caller.
+      ;;         execute a '(panic)', causing an exception in the EVM which
+      ;;         results in any ether sent to the contract to be returned to
+      ;;         the caller.
 
-      (jump invalid-location)))
+      (panic)))
 
 )
